@@ -43,6 +43,13 @@ Help:
 
 def extract_data(filename, qm_size):
     
+    atomic_number = {
+        'H': 1, 
+        'C': 6, 
+        'N': 7,
+        'O': 8
+    }
+    
     qm_coords = []
     mm_coords = []
     with open(filename, 'r') as f:
@@ -57,6 +64,7 @@ def extract_data(filename, qm_size):
                 z = parts[4]
                 count += 1
                 if count <= qm_size:
+                    atom = atomic_number[atom]
                     qm_coords.append((atom, x, y, z))
                 if count >= qm_size+1:
                     mm_coords.append((atom, x, y, z))
@@ -88,6 +96,7 @@ def gen_out(template_file, output_file, qm_coords, mm_coords):
         out.writelines(template_lines)
         for atom, x, y, z in qm_coords:
             out.write(f"{atom:<2}  {x:>12}  {1:<9}{y:>12}  {1:<9}{z:>12}  {1}\n")
+        out.write("\n")
         for x, y, z, charge, zero in mm_coords:
             out.write(f"{float(x):>12.4f}{float(y):>12.4f}{float(z):>12.4f}{charge:>8.4f}  {zero}\n")
             
@@ -99,13 +108,6 @@ qm, mm = extract_data(filename, qm_size=qm_size)
 pc_coords = point_charges(mm)
 gen_out(template_file, output, qm, pc_coords)
 
-# %%
-
-
-# %%
-
-
-# %%
 
 
 
