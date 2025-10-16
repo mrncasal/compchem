@@ -64,49 +64,48 @@ def extract_data(filename, qm_size):
                 z = parts[4]
                 count += 1
                 if count <= qm_size:
-                    atom = atomic_number[atom]
+                    # atom = atomic_number[atom]
                     qm_coords.append((atom, x, y, z))
                 if count >= qm_size+1:
                     mm_coords.append((atom, x, y, z))
 
     return qm_coords, mm_coords    
 
-def point_charges(mm_coords):
+# def point_charges(mm_coords):
     
-    charges = {
-        'O': -0.8340,
-        'H': -0.4170
-    }
+#     charges = {
+#         'O': -0.8340,
+#         'H': -0.4170
+#     }
     
-    pc_coords = []
-    for atom, x, y, z in mm_coords:
-        if atom in charges:
-            charge = charges[atom]
-            pc_coords.append((x,y,z,charge, 0))
-        else:
-            raise ValueError(f"Unexpected atom type: {atom}")
+#     pc_coords = []
+#     for atom, x, y, z in mm_coords:
+#         if atom in charges:
+#             charge = charges[atom]
+#             pc_coords.append((x,y,z,charge, 0))
+#         else:
+#             raise ValueError(f"Unexpected atom type: {atom}")
         
-    return pc_coords      
+#     return pc_coords      
 
 def gen_out(template_file, output_file, qm_coords, mm_coords): 
     with open(template_file, 'r') as t:
         template_lines = t.readlines()
-
     with open(output_file, 'w') as out:
         out.writelines(template_lines)
         for atom, x, y, z in qm_coords:
-            out.write(f"{atom:<2}  {x:>12}  {1:<9}{y:>12}  {1:<9}{z:>12}  {1}\n")
-        out.write("\n")
-        for x, y, z, charge, zero in mm_coords:
-            out.write(f"{float(x):>12.4f}{float(y):>12.4f}{float(z):>12.4f}{charge:>8.4f}  {zero}\n")
+            out.write(f"{atom:<2}  {x:>12} {y:>12} {z:>12} H \n")
+        for atom, x, y, z in mm_coords:
+            out.write(f"{atom:<2}  {x:>12} {y:>12} {z:>12} L \n")
+        out.write(f"\n")
             
 filename=sys.argv[1]
 qm_size = int(sys.argv[2])
 template_file=sys.argv[3]
 output = sys.argv[4]
 qm, mm = extract_data(filename, qm_size=qm_size)
-pc_coords = point_charges(mm)
-gen_out(template_file, output, qm, pc_coords)
+# pc_coords = point_charges(mm)
+gen_out(template_file, output, qm, mm)
 
 
 
