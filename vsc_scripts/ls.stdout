@@ -1,0 +1,16 @@
+SLURM_JOB_ID: 64573970
+SLURM_JOB_USER: vsc35379
+SLURM_JOB_ACCOUNT: lcomputational_photochemistry
+SLURM_JOB_NAME: ls
+SLURM_CLUSTER_NAME: wice
+SLURM_JOB_PARTITION: batch_long
+SLURM_NNODES: 1
+SLURM_NODELIST: m33c27n4
+SLURM_JOB_CPUS_PER_NODE: 72
+Date: Tue Jun  3 16:58:29 CEST 2025
+Walltime: 06-23:00:00
+========================================================================
+cp: cannot stat '/data/leuven/353/vsc35379/scripts/vsc_scripts/ls': No such file or directory
+/var/spool/slurmd/job64573970/slurm_script: line 20: ls: No such file or directory
+rsync: link_stat "/lustre1/scratch/353/vsc35379/64573970/ls*" failed: No such file or directory (2)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1189) [sender=3.1.3]

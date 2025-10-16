@@ -1,0 +1,43 @@
+#!/bin/bash
+
+if [ ! -f "coord" ] ; then
+	x2t *xyz > coord
+fi
+
+if [ -f "control" ]; then
+	rm control auxbasis basis mos
+fi
+
+define << EOJ 
+
+
+a coord
+*
+no
+b
+all def2-TZVP
+*
+eht
+
+
+
+scf
+iter
+300
+
+cc
+ricc2
+cc2
+*
+cbas
+*
+exci
+irrep=a charge=0 multiplicity=1 nexc=10 npre=12 nstart=15
+spectrum states=all operators=diplen,dipve
+exprop all relaxed operators=diplen
+*
+*
+*
+EOJ
+ 
+sed -i '/\$ricc2/a\    scs  cos\=1.20000   css\=0.33333'  control
