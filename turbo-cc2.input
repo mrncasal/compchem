@@ -1,0 +1,101 @@
+#!/bin/bash
+
+# usage: turbo-cc2.input [-eps EPSILON] [-s NSINGLETS] [-t NTRIPLETS]
+
+eps=""
+nsing=""
+ntrip=""
+
+while [ $# -gt 0 ]; do
+        case "$1" in
+                -eps) eps="$2" ;;
+                -s)   nsing="$2" ;;
+                -t)   ntrip="$2" ;;
+                *)    echo "unknown option: $1" >&2
+                      echo "usage: $0 [-eps EPSILON] [-s NSINGLETS] [-t NTRIPLETS]" >&2
+                      exit 1 ;;
+        esac
+        if [ $# -lt 2 ]; then
+                echo "option $1 needs a value" >&2
+                exit 1
+        fi
+        shift 2
+done
+
+for n in "$nsing" "$ntrip"; do
+        if [ -n "$n" ] && ! [[ "$n" =~ ^[1-9][0-9]*$ ]]; then
+                echo "-s and -t need a positive integer, got: $n" >&2
+                exit 1
+        fi
+done
+
+if [ -n "$eps" ] && ! [[ "$eps" =~ ^[0-9]+\.?[0-9]*$ ]]; then
+        echo "-eps needs a number, got: $eps" >&2
+        exit 1
+fi
+
+if [ ! -f "coord" ] ; then
+        x2t *xyz > coord
+fi
+
+if [ -f "control" ]; then
+        rm control auxbasis basis mos
+fi
+
+# exci menu of define; left empty (no $excitations block) if neither -s nor -t is given
+exci=""
+if [ -n "$nsing" ] || [ -n "$ntrip" ]; then
+        exci+="exci"$'\n'
+        if [ -n "$nsing" ]; then
+                exci+="irrep=a charge=0 multiplicity=1 nexc=$nsing npre=$((nsing + 1)) nstart=$((nsing + 2))"$'\n'
+        fi
+        if [ -n "$ntrip" ]; then
+                exci+="irrep=a charge=0 multiplicity=3 nexc=$ntrip npre=$((ntrip + 1)) nstart=$((ntrip + 2))"$'\n'
+        fi
+        exci+="spectrum states=all operators=diplen,dipvel"$'\n'
+        exci+="*"$'\n'
+fi
+
+define << EOJ
+
+
+a coord
+*
+no
+b
+all def2-SVP
+*
+eht
+
+
+
+ri
+on
+*
+cc
+ricc2
+cc2
+*
+cbas
+*
+${exci}*
+*
+EOJ
+
+sed -i '/\$ricc2/a\    scs  cos\=1.20000   css\=0.33333'  control
+sed -i 's/scfiterlimit       30/scfiterlimit       300/' control
+
+if [ -n "$eps" ]; then
+        sed -i '/^\$end/i\
+$cosmo\
+   epsilon='"$eps"'\
+$cosmo_out file=solvent.cosmo\
+$reaction_field\
+   post-SCF\
+   ccs-like' control
+fi
+
+# irrep=a charge=0 multiplicity=1 nexc=5 npre=6 nstart=7
+# irrep=a charge=0 multiplicity=3 nexc=5 npre=6 nstart=7
+# spectrum states=all operators=diplen,dipve
+# exprop all relaxed operators=diplen
